@@ -9,3 +9,6 @@ Erros para corrigir:
 
 Manter o socket aberto do server.
 Colocar varios clientes juntos no mesmo server.
+
+
+Para mandar mensagem, o cliente deve digitar (message "MENSAGEM DESEJADA") e, se as config estiverem certas, a mensagem será transmitida ao serve.scm.
