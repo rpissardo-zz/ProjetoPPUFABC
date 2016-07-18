@@ -1,5 +1,5 @@
 (use socket)
-(define server-on
+(define (server-on)
 (let ((unix-socket (socket af/unix sock/stream))
       (backlog 1)
       (socket-pathname "TestePP2")) 
@@ -13,6 +13,8 @@
       (socket-close connected-socket)
       (socket-close unix-socket)
       (delete-file socket-pathname)
+      (server-on)
     )))
+
 
  
