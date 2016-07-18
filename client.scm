@@ -7,8 +7,5 @@
   (socket-connect unix-socket (unix-address pathname))
   (let ((number-of-bytes-sent (socket-send unix-socket message-to-send)))
     (printf "Number of bytes sent to the server: ~A~%" number-of-bytes-sent))
+  (socket-close unix-socket)
   ))
-
-;(define close
-  ;(socket-close unix-socket)
-  ;)
