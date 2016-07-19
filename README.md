@@ -13,3 +13,5 @@ Colocar varios clientes juntos no mesmo server. (done)
 
 
 Para mandar mensagem, o cliente deve digitar (message "MENSAGEM DESEJADA") e, se as config estiverem certas, a mensagem será transmitida ao serve.scm.
+
+=================Tornar sistema concorrente x( ===================
