@@ -1,9 +1,12 @@
+;(use srfi-18)
 
 (define (chat num-porta)
-  (define recebedor (tcp-listen num-porta 5 #t)) ;;cria o recebedor de mensagens
+
   ;(define main-thread make-thread) ;;cria a thread principal
-  (parameterize ([current-thread main-thread])) 
   (define main-cust (make-custodian))
+  (parameterize ([current-custodian main-cust]) 
+
+  (define recebedor (tcp-listen num-porta 5 #t)) ;;cria o recebedor de mensagens
   (define listaMensagens null) ;; cria as listas que vao armazenar usuarios
   (define listaPrincipal null) ;; e mensagens enviadas e recebidas
   (define listaEntrada null)
@@ -14,11 +17,11 @@
 
   (define (loop)
 
-    (define novoIn aceitaETrata)
-    (define novoOut recebedor)
-
+   ; (define novoIn aceitaETrata)
+    ;(define novoOut recebedor)
+    (define-values (novoIn novoOut) (aceitaETrata recebedor))
     (cond [(tcp-port? novoIn)
-      (display "olá novo usuario " novoOut)
+      (display "ola novo usuario \n" novoOut)
       (newline novoOut)
       (flush-output novoOut)
 
@@ -55,7 +58,7 @@
       (enviaMensagens listaMensagens listaSaida)
       
 
-      (loop)
+      (loop))
 
     (thread loop)
 
@@ -63,12 +66,13 @@
 ;fechar todos as threads e conexões
       (custodian-shutdown-all main-cust))))
 
-  (define (aceitaETrata recebedor)
+
+(define (aceitaETrata recebedor)
     (define entra -1)
     (define sai -1)
 
     (cond [(tcp-accept-ready? recebedor) 
-             (set!-values (entra sai) (tcp-accept recebedor))]
+         (set!-values (entra sai) (tcp-accept recebedor))]
      )
     (values entra sai))
   
@@ -76,7 +80,7 @@
   ;;essa funcao recebe parametros especiais e as listas de usuarios, entrada, saida e mensagens
 
 
-  (define (trata-mensagens listaUsuarios inClientes outClientes listaMensagens)
+(define (trata-mensagens listaUsuarios inClientes outClientes listaMensagens)
     (define nick null)
     (define portaEntrada null)
     (define portaSaida null)
@@ -103,7 +107,7 @@
                  
                  (cond [(not(null? tmp))
                         (set! mensagemEspecial (car tmp))
-                        (set! parametro (cadr tmp)))
+                        (set! parametro (cadr tmp))
                         ])
                  ])
                                     
@@ -117,9 +121,9 @@
                     [else
                      ;;se nao for o ultimo elemento
                      (set! tmpNick (car tmpListaPrincipal))
-                     (set! tmpEntrada (cadr tmpListaPrincipal)))
-                     (set! tmpSaida (caddr tmpListaPrincipal))))
-                     (set! tmpMensagens(cadddr tmpListaPrincipal)))))
+                     (set! tmpEntrada (cadr tmpListaPrincipal))
+                     (set! tmpSaida (caddr tmpListaPrincipal))
+                     (set! tmpMensagens(cadddr tmpListaPrincipal))
                      ;;retornar lista ao inves de elementos soltos pois facilita a leitura
                      (list tmpNick tmpEntrada tmpSaida tmpMensagens)
                      ])
@@ -127,12 +131,12 @@
              [(and (not(null? mensagemEspecial)) (string=? mensagemEspecial "nick")) 
                  (set! tmpListaPrincipal (trata-mensagens (cdr listaUsuarios) (cdr inClientes) (cdr outClientes) listaMensagens))
                  
-                 (cond [(null? tmpListaPrincipal) (list parameter portaEntrada portaSaida listaMensagens)]
+                 (cond [(null? tmpListaPrincipal) (list parametro portaEntrada portaSaida listaMensagens)]
                     [else
-                     (set! tmpNick (correctListGenerator parameter (car tmpListaPrincipal)))
-                     (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal))))
-                     (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))))
-                     (set! tmpMensagens(cadddr tmpListaPrincipal)))))
+                     (set! tmpNick (correctListGenerator parametro (car tmpListaPrincipal)))
+                     (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal)))
+                     (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))
+                     (set! tmpMensagens(cadddr tmpListaPrincipal))
                      (list tmpNick tmpEntrada tmpSaida tmpMensagens)
                  ])
                  ]
@@ -148,9 +152,9 @@
                         ]
                        [else
                         (set! tmpNick (correctListGenerator nick (car tmpListaPrincipal)))
-                        (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal))))
-                        (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))))
-                        (set! tmpMensagens (correctListGenerator mensagem (cadddr tmpListaPrincipal))))))
+                        (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal)))
+                        (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))
+                        (set! tmpMensagens (correctListGenerator mensagem (cadddr tmpListaPrincipal)))
                         (list tmpNick tmpEntrada tmpSaida tmpMensagens)                                          
                         ])
                  ]
@@ -159,24 +163,22 @@
                         [else
                          
                          (set! tmpNick (correctListGenerator nick (car tmpListaPrincipal)))
-                         (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal))))
-                         (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))))
-                         (set! tmpMensagens(cadddr tmpListaPrincipal)))))
+                         (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal)))
+                         (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))
+                         (set! tmpMensagens(cadddr tmpListaPrincipal))
                          
                          (list tmpNick tmpEntrada tmpSaida tmpMensagens)
                          ])
-                    ]
+                   ]
              )
                                     
                                  ]
           [else null]
           )
-    
-    
     )
   
   
-  (define (sendAllMessages listaMensagens portaSaida)
+(define (sendAllMessages listaMensagens portaSaida)
     (define tmpString null)
     (cond [(not(null? listaMensagens))
            
@@ -186,59 +188,49 @@
            (newline portaSaida)
            (flush-output portaSaida)
            (sendAllMessages (cdr listaMensagens) portaSaida)
-           ]
-          )
-           
-    
-    )
+           ]))
 
-  (define (enviaMensagens listaMensagens outClientes)
+(define (enviaMensagens listaMensagens outClientes)
     (cond [(not (null? outClientes))
            (sendAllMessages listaMensagens (car outClientes))
           (enviaMensagens listaMensagens (cdr outClientes))
-          ]
-    )
-   )
+          ]))
   
 
  ;;comandos nas mensagens
 (define (checkMessage mensagem currentInPort currentOutPort) 
-                                (cond [(string=? mensagem "sair") 
-                                      ;;avisar a thread que a porta fechará
-                                      (display "Saindo.." currentOutPort)
-                                      (newline currentOutPort)
-                                      (flush-output currentOutPort)
-                                      ;;terminate de connection
-                                      (close-input-port currentInPort)
-                                      (close-output-port currentOutPort)
-                                      (list "sair" 0)
-                                      ]
-                                      [(and (< 4 (string-length mensagem)) (string=? (substring mensagem 0 4) "nick") )
-                                      (display "Nick mudado" currentOutPort)
-                                      (newline currentOutPort)
-                                      (flush-output currentOutPort)
-                                       
-                                      (list "nick" (substring mensagem 5))
-                                      ]
-                                      [else null]
-                                      )
+        (cond [(string=? mensagem "sair") 
+              ;;avisar a thread que a porta fechará
+              (display "Saindo.." currentOutPort)
+              (newline currentOutPort)
+              (flush-output currentOutPort)
+              ;;terminate de connection
+              (close-input-port currentInPort)
+              (close-output-port currentOutPort)
+              (list "sair" 0)
+              ]
+              [(and (< 4 (string-length mensagem)) (string=? (substring mensagem 0 4) "nick") )
+              (display "Nick mudado" currentOutPort)
+              (newline currentOutPort)
+              (flush-output currentOutPort)
+               
+              (list "nick" (substring mensagem 5))
+              ]
+              [else null]
+              )
                                 
   )
   ;;funcoes uteis
   ;;
   
-  (define (removeChar aString) (substring aString 0 (- (string-length aString) 1)) )
-  
-  (define (cleanOutput aString) (cond [(list? aString) (car aString)]
-                                      [else aString]))
-  (define (correctListGenerator a b) (cond [(list? b) 
-                                            (cons a b)]
-                                           [else
-                                            (list a b)]
-                                           )
-    )
-  (define (start) (serve 8081))
+(define (removeChar aString) (substring aString 0 (- (string-length aString) 1)) )
 
-  
-  )
-
+(define (cleanOutput aString) (cond [(list? aString) (car aString)]
+          [else aString]))
+(define (correctListGenerator a b) (cond [(list? b) 
+            (cons a b)]
+           [else
+            (list a b)]
+           )
+)
+(define (start) (chat 8089))
