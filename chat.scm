@@ -60,7 +60,7 @@
       (custodian-shutdown-all main-cust))))
 
 
-(define (checaMensagem mensagem currentInPort currentOutPort listaUsuarios) 
+(define (checaMensagem mensagem currentInPort currentOutPort ) 
   (cond [(string=? mensagem "sair") 
     ;;avisar a thread que a porta fechará
     (display "Tchau!" currentOutPort)
@@ -80,14 +80,14 @@
     (list "nick" (substring mensagem 5))
     ]
 
-    [(string=? mensagem "lista") 
-    (display "Lista de usuarios:" currentOutPort)
-    (newline currentOutPort)
-    (display (listarUsuarios listaUsuarios) currentOutPort)
-    (newline currentOutPort)
-    (flush-output currentOutPort)
-    null
-    ]
+    ;[(string=? mensagem "lista") 
+    ;(display "Lista de usuarios:" currentOutPort)
+    ;(newline currentOutPort)
+    ;(display (listarUsuarios listaUsuarios) currentOutPort)
+    ;(newline currentOutPort)
+    ;(flush-output currentOutPort)
+    ;null
+    ;]
 
     [else null]
     )
@@ -132,7 +132,7 @@
      ;;le a mensagem
      (cond [(char-ready? portaEntrada)
          (set! mensagem (read-line portaEntrada))
-         (set! tmp  (checaMensagem mensagem portaEntrada portaSaida listaUsuarios))
+         (set! tmp  (checaMensagem mensagem portaEntrada portaSaida))
          
          (cond [(not(null? tmp))
             (set! mensagemEspecial (car tmp))
@@ -168,18 +168,19 @@
                ])
                ]
             ;; lista usuarios logados
-            [(and (not(null? mensagemEspecial)) (string=? mensagemEspecial "lista")) 
-               (set! tmpListaPrincipal (trata-mensagens (cdr listaUsuarios) (cdr inClientes) (cdr outClientes) listaMensagens))
-               
-              (cond [(null? tmpListaPrincipal) (list parametro portaEntrada portaSaida listaMensagens)]
-                [else
-                 (set! tmpNick (geradorListaCorreta parametro (car tmpListaPrincipal)))
-                 (set! tmpEntrada (geradorListaCorreta portaEntrada (cadr tmpListaPrincipal)))
-                 (set! tmpSaida (geradorListaCorreta portaSaida (caddr tmpListaPrincipal)))
-                 (set! tmpMensagens(cadddr tmpListaPrincipal))
-                 (list tmpNick tmpEntrada tmpSaida tmpMensagens)
-               ])
-               ]
+               ;[(and (not(null? mensagemEspecial)) (string=? mensagemEspecial "lista")) 
+               ;(set! tmpListaPrincipal (trata-mensagens (cdr listaUsuarios) (cdr inClientes) (cdr outClientes) listaMensagens))
+              ; 
+              ;(cond [(null? tmpListaPrincipal) (list parametro portaEntrada portaSaida listaMensagens)]
+              ;  [else
+              ;   (set! tmpNick (geradorListaCorreta parametro (car tmpListaPrincipal)))
+              ;   (set! tmpEntrada (geradorListaCorreta portaEntrada (cadr tmpListaPrincipal)))
+              ;   (set! tmpSaida (geradorListaCorreta portaSaida (caddr tmpListaPrincipal)))
+              ;   (set! tmpMensagens(cadddr tmpListaPrincipal))
+              ;   (list tmpNick tmpEntrada tmpSaida tmpMensagens)
+              ; ])
+              ; ]
+
 
 
 				[(not(null? mensagem))
