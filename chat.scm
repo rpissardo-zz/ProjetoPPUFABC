@@ -59,6 +59,18 @@
 ;fechar todos as threads e conexões
       (custodian-shutdown-all main-cust))))
 
+(define (removeChar aString) (substring aString 0 (- (string-length aString) 1)) )
+
+(define (cleanOutput aString) (cond [(list? aString) (car aString)]
+    [else aString]))
+
+(define (geradorListaCorreta a b) (cond [(list? b) 
+    (cons a b)]
+   [else
+    (list a b)]
+   )
+  )
+
 
 (define (checaMensagem mensagem currentInPort currentOutPort ) 
   (cond [(string=? mensagem "sair") 
@@ -72,12 +84,12 @@
     (list "sair" 0)
     ]
 
-    [(and (< 4 (string-length mensagem)) (string=? (substring mensagem 0 4) "nick") )
-    (display "Nick mudou" currentOutPort)
+    [(and (< 7 (string-length mensagem)) (string=? (substring mensagem 0 7) "usuario") )
+    (display "usuario mudou" currentOutPort)
     (newline currentOutPort)
     (flush-output currentOutPort)
      
-    (list "nick" (substring mensagem 5))
+    (list "usuario" (substring mensagem 8))
     ]
 
     ;[(string=? mensagem "lista") 
@@ -110,6 +122,14 @@
   
   )
 
+(define (enviaParaTodos listaMensagens outClientes)
+  (cond [(not (null? outClientes))
+     (enviaTodasMensagens listaMensagens (car outClientes))
+    (enviaParaTodos listaMensagens (cdr outClientes))
+    ]
+  )
+ )
+
 (define (aceitaETrata recebedor)
 
   (define-values (entra sai) (values -1 -1))
@@ -120,7 +140,7 @@
 
 (define (trata-mensagens listaUsuarios inClientes outClientes listaMensagens)
   
-  (define-values (nick portaEntrada portaSaida) (values null null null))
+  (define-values (usuario portaEntrada portaSaida) (values null null null))
   (define mensagem null)
   (define-values (mensagemEspecial parametro) (values null null))
   (define-values (tmpNick tmpEntrada tmpSaida tmpMensagens) (values null null null null))
@@ -128,7 +148,7 @@
   (define tmp null)
   
   (cond [(not (null? listaUsuarios)) 
-     (set!-values (nick portaEntrada portaSaida) (values (car listaUsuarios) (car inClientes) (car outClientes)))
+     (set!-values (usuario portaEntrada portaSaida) (values (car listaUsuarios) (car inClientes) (car outClientes)))
      ;;le a mensagem
      (cond [(char-ready? portaEntrada)
          (set! mensagem (read-line portaEntrada))
@@ -154,8 +174,8 @@
                    (list tmpNick tmpEntrada tmpSaida tmpMensagens)
                    ])
                 ]
-                ;;troca nick
-           [(and (not(null? mensagemEspecial)) (string=? mensagemEspecial "nick")) 
+                ;;troca usuario
+           [(and (not(null? mensagemEspecial)) (string=? mensagemEspecial "usuario")) 
                (set! tmpListaPrincipal (trata-mensagens (cdr listaUsuarios) (cdr inClientes) (cdr outClientes) listaMensagens))
                
               (cond [(null? tmpListaPrincipal) (list parametro portaEntrada portaSaida listaMensagens)]
@@ -183,19 +203,19 @@
 
 
 
-				[(not(null? mensagem))
+        [(not(null? mensagem))
             
              (set! tmpListaPrincipal (trata-mensagens (cdr listaUsuarios) (cdr inClientes) (cdr outClientes) listaMensagens))
              (set! mensagem (string-append ": " mensagem))
-             (if (not (string? nick)) 
-                 (set! mensagem (string-append (number->string nick) mensagem))
-                 (set! mensagem (string-append nick mensagem))
+             (if (not (string? usuario)) 
+                 (set! mensagem (string-append (number->string usuario) mensagem))
+                 (set! mensagem (string-append usuario mensagem))
                  )
              (cond [(null? tmpListaPrincipal) 
-                  (list nick portaEntrada portaSaida mensagem)
+                  (list usuario portaEntrada portaSaida mensagem)
                   ]
                  [else
-                  (set! tmpNick (geradorListaCorreta nick (car tmpListaPrincipal)))
+                  (set! tmpNick (geradorListaCorreta usuario (car tmpListaPrincipal)))
                   (set! tmpEntrada (geradorListaCorreta portaEntrada (cadr tmpListaPrincipal)))
                   (set! tmpSaida (geradorListaCorreta portaSaida (caddr tmpListaPrincipal)))
                   (set! tmpMensagens (geradorListaCorreta mensagem (cadddr tmpListaPrincipal)))
@@ -204,10 +224,10 @@
                       ])
                          ]
            [else (set! tmpListaPrincipal (trata-mensagens (cdr listaUsuarios) (cdr inClientes) (cdr outClientes) listaMensagens))
-                 (cond[ (null? tmpListaPrincipal) (list nick portaEntrada portaSaida listaMensagens)]
+                 (cond[ (null? tmpListaPrincipal) (list usuario portaEntrada portaSaida listaMensagens)]
                     [else
                      
-                     (set! tmpNick (geradorListaCorreta nick (car tmpListaPrincipal)))
+                     (set! tmpNick (geradorListaCorreta usuario (car tmpListaPrincipal)))
                      (set! tmpEntrada (geradorListaCorreta portaEntrada (cadr tmpListaPrincipal)))
                      (set! tmpSaida (geradorListaCorreta portaSaida (caddr tmpListaPrincipal)))
                      (set! tmpMensagens(cadddr tmpListaPrincipal))
@@ -216,29 +236,7 @@
         [else null]
         ) 
   )
-
-
-
-
-(define (enviaParaTodos listaMensagens outClientes)
-  (cond [(not (null? outClientes))
-     (enviaTodasMensagens listaMensagens (car outClientes))
-    (enviaParaTodos listaMensagens (cdr outClientes))
-    ]
-  )
- )
   
-
-  ;;funcoes uteis
-(define (removeChar aString) (substring aString 0 (- (string-length aString) 1)) )
-(define (cleanOutput aString) (cond [(list? aString) (car aString)]
-    [else aString]))
-(define (geradorListaCorreta a b) (cond [(list? b) 
-    (cons a b)]
-   [else
-    (list a b)]
-   )
-  )
 
 (define (listarUsuarios listaUsuarios)
  ; (define listaRetorno '())
