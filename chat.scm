@@ -35,20 +35,21 @@
 
     (set! listaPrincipal (trata-mensagens listaUsuarios listaEntrada listaSaida null))
 
-    (cond [(null? listaPrincipal) (set! listaUsuarios null)
+    (cond [(null? listaPrincipal)
                     (set! listaUsuarios null)
-                    (set! listaUsuarios null)
-                    (set! listaUsuarios null)]
+                    (set! listaEntrada null)
+                    (set! listaSaida null)
+                    (set! listaMensagens null)]
         [(not (list? (car listaPrincipal))) ;se for o unico elemento da lista
             (set! listaUsuarios (list (car listaPrincipal)))
-            (set! listaEntrada (list (cadr listaPrincipal)))
+            (set! listaEntrada (list (car (cdr  listaPrincipal))))
             (set! listaSaida (list (caddr listaPrincipal)))
 
             (if (not (null? (cadddr listaPrincipal)))
             (set! listaMensagens (list (cadddr listaPrincipal)))
             (set! listaMensagens null))]
         [else (set! listaUsuarios (car listaPrincipal))
-            (set! listaEntrada (cadr listaPrincipal))
+            (set! listaEntrada (car (cdr  listaPrincipal)))
             (set! listaSaida (caddr listaPrincipal))
 
             (if (not(null? (cadddr listaPrincipal)))
@@ -130,7 +131,7 @@
                  
                 (cond [(not(null? tmp))
                     (set! mensagemEspecial (car tmp))
-                    (set! parametro (cadr tmp))
+                    (set! parametro (car (cdr  tmp)))
                     ])
                 ])
                                     
@@ -144,7 +145,7 @@
                     [else
                     ;;se nao for o ultimo elemento
                     (set! tmpNick (car tmpListaPrincipal))
-                    (set! tmpEntrada (cadr tmpListaPrincipal))
+                    (set! tmpEntrada (car (cdr  tmpListaPrincipal)))
                     (set! tmpSaida (caddr tmpListaPrincipal))
                     (set! tmpMensagens(cadddr tmpListaPrincipal))
                     ;;retornar lista ao inves de elementos soltos pois facilita a leitura
@@ -157,7 +158,7 @@
                 (cond [(null? tmpListaPrincipal) (list parametro portaEntrada portaSaida listaMensagens)]
                     [else
                     (set! tmpNick (correctListGenerator parametro (car tmpListaPrincipal)))
-                    (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal)))
+                    (set! tmpEntrada (correctListGenerator portaEntrada (car (cdr  tmpListaPrincipal))))
                     (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))
                     (set! tmpMensagens(cadddr tmpListaPrincipal))
                     (list tmpNick tmpEntrada tmpSaida tmpMensagens)
@@ -175,7 +176,7 @@
                     ]
                     [else
                     (set! tmpNick (correctListGenerator nick (car tmpListaPrincipal)))
-                    (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal)))
+                    (set! tmpEntrada (correctListGenerator portaEntrada (car (cdr  tmpListaPrincipal))))
                     (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))
                     (set! tmpMensagens (correctListGenerator mensagem (cadddr tmpListaPrincipal)))
                     (list tmpNick tmpEntrada tmpSaida tmpMensagens)                                          
@@ -186,7 +187,7 @@
                     [else
                      
                     (set! tmpNick (correctListGenerator nick (car tmpListaPrincipal)))
-                    (set! tmpEntrada (correctListGenerator portaEntrada (cadr tmpListaPrincipal)))
+                    (set! tmpEntrada (correctListGenerator portaEntrada (car (cdr  tmpListaPrincipal))))
                     (set! tmpSaida (correctListGenerator portaSaida (caddr tmpListaPrincipal)))
                     (set! tmpMensagens(cadddr tmpListaPrincipal))
                      
